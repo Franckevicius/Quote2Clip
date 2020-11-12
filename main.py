@@ -35,12 +35,8 @@ def move_to_folder(root=project_root, folder_name=""):
 def find_folders_with_subs(root=os.getcwd(), strict=True):
     subtitle_dirs = []
     check = all if strict else any
-
     
-    for dir_path, dir_names, file_names in os.walk(root):
-        if any(sub_dir.startswith(".") for sub_dir in dir_path.split("\\")):
-            continue
-        
+    for dir_path, dir_names, file_names in os.walk(root+"\\Subtitles"):
         if check(f.endswith(".srt") for f in file_names):
             subtitle_dirs.append(dir_path)
    
