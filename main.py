@@ -1,10 +1,12 @@
 import os
 import re
 from quote import Quote
+from cut_video import cut_clip
 
 project_root = os.getcwd()
-video_root = project_root + "\\Video"
-subtitles_root = project_root + "\\Subtitles"
+video_root = project_root + "\\Video\\"
+subtitles_root = project_root + "\\Subtitles\\"
+output_root = project_root + "\\Output\\"
 
 def find_all_quotes(query):
     query_words = sanitize_text(query)
@@ -13,12 +15,10 @@ def find_all_quotes(query):
 
     for dir in subtitle_dirs:
         for file in os.listdir(dir):
-            print(file)
             quotes += find_quotes_in_transcript(query_words, dir+"\\"+file)
              
-    quotes = sorted(quotes, key=lambda q:(q.query_quote_match, q.quote_query_match), reverse=True)
-    
-    return quotes[5]
+    quotes = sorted(quotes, key=lambda q:(q.query_quote_match, q.quote_query_match), reverse=True)    
+    return quotes[:4]
 
 
 def find_quotes_in_transcript(query_words, file_path):
@@ -79,15 +79,20 @@ def find_folders_with_subs(root=os.getcwd(), strict=True):
 
 def sanitize_text(text):
     words = re.sub("[^a-zA-Z0-9 ]+", " ", text).strip().split(' ') 
-    return [w for w in words if len(w) > 0]
+    return [w.lower() for w in words if len(w) > 0]
    
 
 def calc_quote_query_match(query_words, quote_words):
-    return len(set(query_words) & set(quote_words)) / len(quote_words)
+    return len(set(query_words) & set(quote_words)) / len(set(quote_words))
 
 
 def calc_query_quote_match(query_words, quote_words):  
-    return len(set(query_words) & set(quote_words)) / len(query_words)
+    return len(set(query_words) & set(quote_words)) / len(set(query_words))
 
 
-find_all_quotes("ice cube")
+for i, q in enumerate(find_all_quotes("cheese it")):
+    video_input_path = re.sub(r"\\Subtitles", r"\\Video", q.path)
+    video_input_path = re.sub(".srt", ".mkv", video_input_path)
+    output_path = f"{output_root}{i}.mkv"
+    cut_clip(video_input_path, output_path, q.start_time, q.end_time)
+
