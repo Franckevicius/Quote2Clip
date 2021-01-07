@@ -27,10 +27,7 @@ def find_quotes_in_transcript(query_words, file_path):
     with open(file_path, "r") as f:
         line_generator = ((l.strip() if l!="\n" else "\n") for l in f.readlines())
         line = next(line_generator, -1)
-        while True: #?
-            if line == -1:
-                break
-            
+        while line != -1:             
             if line == "\n":
                 line = next(line_generator, -1) 
                 continue
@@ -90,7 +87,7 @@ def calc_query_quote_match(query_words, quote_words):
     return len(set(query_words) & set(quote_words)) / len(set(query_words))
 
 
-for i, q in enumerate(find_all_quotes("cheese it")):
+for i, q in enumerate(find_all_quotes("Another pointless day where I accomplish nothing")):
     video_input_path = re.sub(r"\\Subtitles", r"\\Video", q.path)
     video_input_path = re.sub(".srt", ".mkv", video_input_path)
     output_path = f"{output_root}{i}.mkv"
