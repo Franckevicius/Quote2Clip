@@ -7,19 +7,23 @@ video_root = project_root + "\\Video"
 subtitles_root = project_root + "\\Subtitles"
 
 def find_all_quotes(query):
-    query = sanitate_query(query)
+    query_words = sanitize_text(query)
     subtitle_dirs = find_folders_with_subs()
-    
+    quotes=[]
+
     for dir in subtitle_dirs:
         for file in os.listdir(dir):
-            quotes = find_quotes_in_transcript(query, dir+"\\"+file)
+            print(file)
+            quotes += find_quotes_in_transcript(query_words, dir+"\\"+file)
              
+    quotes = sorted(quotes, key=lambda q:(q.query_quote_match, q.quote_query_match), reverse=True)
+    
+    return quotes[5]
 
-    return quotes
 
-
-def find_quotes_in_transcript(query, file_path):
+def find_quotes_in_transcript(query_words, file_path):
     quotes = []
+
     with open(file_path, "r") as f:
         line_generator = ((l.strip() if l!="\n" else "\n") for l in f.readlines())
         line = next(line_generator, -1)
@@ -40,8 +44,12 @@ def find_quotes_in_transcript(query, file_path):
                 quote += " " + line
                 line = next(line_generator)
 
+            quote_words = sanitize_text(quote)
             quotes.append(Quote(path=file_path, text=quote, 
-                          start_timestamp=start_timestamp, end_timestamp=end_timestamp))
+                          start_timestamp=start_timestamp, end_timestamp=end_timestamp,
+                          quote_query_match=calc_quote_query_match(query_words, quote_words),
+                          query_quote_match=calc_query_quote_match(query_words, quote_words)))
+    
     return quotes
 
 def return_to_root():
@@ -69,20 +77,17 @@ def find_folders_with_subs(root=os.getcwd(), strict=True):
     return subtitle_dirs
 
 
-def sanitate_query(query):
-    words = re.sub("[^a-zA-Z0-9 ]+", " ", query).strip().split(' ') 
-    return words #[w for w in words if len(w) > 1]
+def sanitize_text(text):
+    words = re.sub("[^a-zA-Z0-9 ]+", " ", text).strip().split(' ') 
+    return [w for w in words if len(w) > 0]
    
 
-def extract_line():
-    pass
+def calc_quote_query_match(query_words, quote_words):
+    return len(set(query_words) & set(quote_words)) / len(quote_words)
 
 
-def calc_sentence_query_match(query, line_extract):
-    pass
+def calc_query_quote_match(query_words, quote_words):  
+    return len(set(query_words) & set(quote_words)) / len(query_words)
 
 
-def calc_query_sentence_match(query, line_extract):
-    pass
-
-find_all_quotes("")
+find_all_quotes("ice cube")
