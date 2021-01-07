@@ -1,15 +1,17 @@
 class Quote:
-    def __init__(self, path, text, start_timestamp, end_timestamp):
+    def __init__(self, path, text, start_timestamp, end_timestamp,
+                 quote_query_match, query_quote_match):
         self.path = path
         self.text = text
         self.start_time = self.calc_second_stamp(start_timestamp)
         self.end_time = self.calc_second_stamp(end_timestamp)
-        self.sentence_match = 0
-        self.quote_match = 0
+        self.quote_query_match = quote_query_match
+        self.query_quote_match = query_quote_match
         
 
     def __str__(self):
-        return "\n".join([self.text, str(self.start_time), str(self.end_time)])
+        return "\n".join([self.text, str(self.start_time), str(self.end_time), 
+                          str(self.quote_query_match), str(self.query_quote_match)])
 
 
     def calc_second_stamp(self, timestamp):
