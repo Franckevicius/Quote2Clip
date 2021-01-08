@@ -9,11 +9,6 @@ class Quote:
         self.query_quote_match = query_quote_match
         
 
-    def __str__(self):
-        return "\n".join([self.text, str(self.start_time), str(self.end_time), 
-                          str(self.quote_query_match), str(self.query_quote_match)])
-
-
     def calc_second_stamp(self, timestamp):
         times_split = timestamp.replace(",", ":").split(":")
         times_split = [int(time) for time in times_split]

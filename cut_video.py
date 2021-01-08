@@ -1,5 +1,4 @@
 import ffmpeg
-import os
 
 def cut_clip(input_path, output_path, start="00.000", end="00.000"):
     input_stream = ffmpeg.input(input_path)
