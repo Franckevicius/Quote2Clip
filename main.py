@@ -22,24 +22,24 @@ def find_quotes_in_transcript(query_words, file_path):
     quotes = []
 
     with open(file_path, "r") as f:
-        line_generator = ((l.strip() if l!="\n" else "\n") for l in f.readlines())
-        line = next(line_generator, -1)
+        all_lines = ((l.strip() if l!="\n" else "\n") for l in f.readlines())
+        line = next(all_lines, -1)
         while line != -1:             
             if line == "\n":
-                line = next(line_generator, -1) 
+                line = next(all_lines, -1) 
                 continue
             
-            timestamp = next(line_generator)
-            start_timestamp, end_timestamp = timestamp.split(" --> ")
+            quote_index = int(line)
+            start_timestamp, end_timestamp = next(all_lines).split(" --> ")
 
             quote = ""
-            line = next(line_generator)
+            line = next(all_lines)
             while line != "\n":
                 quote += " " + line
-                line = next(line_generator)
+                line = next(all_lines)
 
             quote_words = sanitize_text(quote)
-            quotes.append(Quote(path=file_path, text=quote, 
+            quotes.append(Quote(path=file_path, text=quote, index=quote_index,
                                 start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                 quote_query_match=calc_quote_query_match(query_words, quote_words),
                                 query_quote_match=calc_query_quote_match(query_words, quote_words)))
@@ -78,13 +78,47 @@ def clear_output_folder(output_root):
         os.remove(f"{output_root}{file}")
 
 
+def find_quote_last_index(quote:Quote):
+    with open(quote.path, "r") as f:
+        lines_reversed = [(l.strip() if l!="\n" else "\n") for l in f.readlines()][::-1]
+        last_index = lines_reversed[lines_reversed.index("\n", 2) - 1]
+   
+    return int(last_index)
+
+
+def add_context(quote:Quote, context_size):
+    if context_size < 0:
+        context_index = max(1, quote.index+context_size)
+    elif context_size > 0:
+        context_index = min(find_quote_last_index(quote), quote.index+context_size)
+    if context_size == 0 or context_index == quote.index:
+        return
+
+    with open(quote.path, "r") as f:
+        all_lines = ((l.strip() if l!="\n" else "\n") for l in f.readlines())
+        line = next(all_lines)
+        
+        while line != str(min(quote.index, context_index)):
+            line = next(all_lines)
+
+        start_timestamp, _ = next(all_lines).split(" --> ")
+        quote.start_time = quote.calc_second_stamp(start_timestamp)
+
+        while line != str(max(quote.index, context_index)):
+            line = next(all_lines)
+
+        _, end_timestamp = next(all_lines).split(" --> ")
+        quote.end_time = quote.calc_second_stamp(end_timestamp)
+
+
 def main(args):
     if len(args) == 0:
-        print("Check the .readme for usage instructions")
+        print("No args passed. Check the .readme for usage instructions")
         return
     
     query = args[0]
-    best_count = 1 if len(args) == 1 else int(args[1])
+    best_count = 1 if len(args) < 2 else int(args[1])
+    context_size = 0 if len(args) < 3 else int(args[2])
     project_root = os.getcwd()
     video_root = project_root + "\\Video\\"
     subtitles_root = project_root + "\\Subtitles\\"
@@ -95,6 +129,7 @@ def main(args):
         video_input_path = re.sub(r"\\Subtitles", r"\\Video", q.path)
         video_input_path = re.sub(".srt", ".mkv", video_input_path)
         output_path = f"{output_root}{i}.mkv"
+        add_context(q, context_size)
         cut_clip(video_input_path, output_path, q.start_time, q.end_time)
 
 if __name__ == "__main__":
