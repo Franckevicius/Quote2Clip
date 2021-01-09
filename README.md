@@ -22,7 +22,7 @@ Matches "ice cube", includes 2 entries before the entry containing "ice cube", s
 Root/
 ├──Output/
 ├──Subtitles/
-|  ├──S01/
+│  ├──S01/
 │  │  ├──episode_1.srt
 │  │  └──... 
 │  ├──S02/
