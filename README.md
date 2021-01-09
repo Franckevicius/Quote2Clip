@@ -1,8 +1,6 @@
 # Quote2Clip
 Utility script for extracting clips based on partial or exact quotes.
 
-### Requirements
-`ffmpeg-python`
 
 ### Usage
 `python main.py query [n_clips] [m_context]`
@@ -15,3 +13,23 @@ Example:
 
 ```python main.py "ice cube" 3 -2``` <br/>
 Matches "ice cube", includes 2 entries before the entry containing "ice cube", selects the best 3 matches.
+
+### Requirements
+`ffmpeg-python`
+
+##### Folder structure:
+```
+Root/
+├──Output/
+├──Subtitles/
+|  ├──S01/
+│  │  ├──episode_1.srt
+│  │  └──... 
+│  ├──S02/
+│  └──... 
+└──Video/
+   ├──S01/
+   │  ├──episode_1.mkv
+   │  └──...
+   └──S02/ 
+   ```
